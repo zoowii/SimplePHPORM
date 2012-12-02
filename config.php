@@ -12,6 +12,8 @@ include_once __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
 define('ROOT', __DIR__);
 define('SIMU_COMPONENTS_PATH', ROOT . DIRECTORY_SEPARATOR . 'simu_components');
 
+define('TABLE_PREFIX', 'fo_');
+
 define('DB_ADAPTER', 'mysql');
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'test');

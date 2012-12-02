@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Created by JetBrains PhpStorm.
  * User: Administrator
@@ -158,7 +158,7 @@ abstract class Model
 
     /**
      * @param $attr
-     * @param array $with: 要在查询数据库时一起查询的relation的列表，即靠外键连接的对象，目前版本只支持一次获取一个，即$with数组长度不超过1
+     * @param array $with: 要在查询数据库时一起查询的relation的列表，即靠外键连接的对象
      * 使用方式比如：ModelA::findAllByAttributes(array('has_read'='false'), array('user'))
      * @return array
      * @throws Exception
@@ -180,13 +180,12 @@ abstract class Model
                 $i++;
             }
         }
+        $from_string = ' from ' . $model_name::getRealTableName() . ' t';
         if (!is_array($with) || count($with) <= 0) {
-            $left_join_string = '';
             $select_string = ' *';
         } else {
             // 使用 字段名 和 relation名（比如user_id对应的user)$字段名的方式区分不同字段，
             // 前者表示本张表的字段，后者表示外键对应的表的字段
-            $left_join_string = ' left join';
             $select_string = ' ';
             $i = 0;
             foreach ($model_name::$columnTypes as $col => $type) {
@@ -198,12 +197,15 @@ abstract class Model
             }
             $i = 0;
             foreach ($with as $name) {
-                if ($i > 0) {
-                    $left_join_string .= ',';
-                }
                 $select_string .= ',';
                 $rel = $model_name::$relations[$name];
-                $left_join_string .= ' ' . $rel['model']::getRealTableName() . " t$i on t$i.`" . $rel['key'] . "`=t.`" . $rel['column'] . "`";
+                if ($where_string != '') {
+                    $where_string .= ' and';
+                } else {
+                    $where_string .= ' where';
+                }
+                $where_string .= ' t.`' . $rel['column'] . "`=t$i.`" . $rel['key'] . "`";
+                $from_string .= ',' . $rel['model']::getRealTableName() . " t$i";
                 $j = 0;
                 foreach ($rel['model']::$columnTypes as $col => $type) {
                     if ($j > 0) {
@@ -216,7 +218,7 @@ abstract class Model
             }
         }
         $order_string = $order === '' ? '' : " order by $order";
-        $sql = "select" . $select_string . " from " . TABLE_PREFIX . $model_name::$tableName . ' t' . $left_join_string . $where_string . $order_string;
+        $sql = "select" . $select_string . $from_string . $where_string . $order_string;
         if (is_numeric($offset)) {
             $sql .= " offset $offset";
         }
@@ -242,6 +244,11 @@ abstract class Model
         return $objects;
     }
 
+    /**
+     * @param $model_name
+     * @param $data
+     * @return Model
+     */
     private static function loadFromArray($model_name, $data)
     {
         if (!is_array($data) || !is_string($model_name) || $model_name === '') {
@@ -265,6 +272,13 @@ abstract class Model
         }
     }
 
+    /**
+     * @param $id
+     * @param string $order
+     * @param array $with
+     * @param null $offset
+     * @return Model
+     */
     public static function findByPk($id, $order = '', $with = array(), $offset = null)
     {
         $model_name = get_called_class();
@@ -272,6 +286,13 @@ abstract class Model
         return $model_name::findOneByAttributes(array($pk => $id), $order, $with, $offset);
     }
 
+    /**
+     * @param $attr
+     * @param string $order
+     * @param array $with
+     * @param null $offset
+     * @return Model
+     */
     public static function findOneByAttributes($attr, $order = '', $with = array(), $offset = null)
     {
         $cls = get_called_class();
@@ -285,7 +306,7 @@ abstract class Model
 
     /**
      * @param $condition sql条件信息
-     * @param array $with 要通过left join查询的relations中的字段，也就是外键对应的表 TODO
+     * @param array $with 要通过级联查询的relations中的字段，也就是外键对应的表
      * @return array
      * @throws Exception
      */
@@ -294,13 +315,12 @@ abstract class Model
         $model_name = get_called_class();
         $conn = Simu::db();
         $where_string = (is_null($condition) || $condition === '') ? '' : " where $condition";
+        $from_string = ' from ' . $model_name::getRealTableName() . ' t';
         if (!is_array($with) || count($with) <= 0) {
-            $left_join_string = '';
             $select_string = ' *';
         } else {
             // 使用 字段名 和 relation名（比如user_id对应的user)$字段名的方式区分不同字段，
             // 前者表示本张表的字段，后者表示外键对应的表的字段
-            $left_join_string = ' left join';
             $select_string = ' ';
             $i = 0;
             foreach ($model_name::$columnTypes as $col => $type) {
@@ -312,12 +332,15 @@ abstract class Model
             }
             $i = 0;
             foreach ($with as $name) {
-                if ($i > 0) {
-                    $left_join_string .= ',';
+                if ($where_string != '') {
+                    $where_string .= ' and';
+                } else {
+                    $where_string .= ' where';
                 }
                 $select_string .= ',';
                 $rel = $model_name::$relations[$name];
-                $left_join_string .= ' ' . $rel['model']::getRealTableName() . " t$i on t$i.`" . $rel['key'] . "`=t.`" . $rel['column'] . "`";
+                $where_string .= ' t.`' . $rel['column'] . "`=t$i.`" . $rel['key'] . "`";
+                $from_string .= ',' . $rel['model']::getRealTableName() . " t$i";
                 $j = 0;
                 foreach ($rel['model']::$columnTypes as $col => $type) {
                     if ($j > 0) {
@@ -330,7 +353,7 @@ abstract class Model
             }
         }
         $order_string = $order === '' ? '' : " order by $order";
-        $sql = "select" . $select_string . " from " . TABLE_PREFIX . $model_name::$tableName . ' t' . $left_join_string . $where_string . $order_string;
+        $sql = "select" . $select_string . $from_string . $where_string . $order_string;
         if (is_numeric($offset)) {
             $sql .= " offset $offset";
         }
@@ -356,6 +379,13 @@ abstract class Model
         return $objects;
     }
 
+    /**
+     * @param $condition
+     * @param string $order
+     * @param array $with
+     * @param null $offset
+     * @return Model
+     */
     public static function findOne($condition, $order = '', $with = array(), $offset = null)
     {
         $cls = get_called_class();
@@ -374,6 +404,9 @@ abstract class Model
         return $model;
     }
 
+    /**
+     * @return array
+     */
     public function toArray()
     {
         $res = array();
