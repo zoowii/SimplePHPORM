@@ -15,7 +15,7 @@ abstract class Model
     protected static $columnTypes;
     protected static $relations = array(); // 外键，eg. array('name' => array('column' => '?', 'model' => 'model_name', 'key' => 'mapped_column_name'))
     protected $data = array();
-    protected static $onlyReadColumns = array(); // 只从数据库中读取，但不在保存时写入数据库的字段，比如id, 自动时间等
+    protected static $readOnlyColumns = array(); // 只从数据库中读取，但不在保存时写入数据库的字段，比如id, 自动时间等
 
     public function __set($name, $value)
     {
@@ -88,7 +88,7 @@ abstract class Model
             $columns = $this::$columnTypes;
             $i = 0;
             foreach ($columns as $column => $value) {
-                if (in_array($column, $this::$readOnlyColumn)) {
+                if (in_array($column, $this::$readOnlyColumns)) {
                     continue;
                 }
                 if ($i > 0) {

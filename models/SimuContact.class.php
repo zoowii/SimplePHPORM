@@ -39,5 +39,5 @@ class SimuContact extends Model
         'disabled' => 'int',
         'default_billing_id' => 'int'
     );
-
+	protected static $readOnlyColumns = array('object_id');
 }

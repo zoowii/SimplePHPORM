@@ -16,5 +16,5 @@ final class SimuCacheModel extends Model
         'value' => 'string',
         'create_time' => 'timestamp'
     );
-
+	protected static $readOnlyColumns = array('id', 'create_time');
 }

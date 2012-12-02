@@ -24,5 +24,5 @@ class SimuChat extends Model
         'user' => array('column' => 'user_id', 'model' => 'SimuContact', 'key' => 'object_id'),
         'to_user' => array('column' => 'to_user_id', 'model' => 'SimuContact', 'key' => 'object_id')
     );
-
+	protected static $readOnlyColumns = array('object_id', 'create_time');
 }
