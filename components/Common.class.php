@@ -1,14 +1,14 @@
 <?php
 /**
- * Created by JetBrains PhpStorm.
- * User: Administrator
- * Date: 12-11-27
- * Time: 上午10:48
- * To change this template use File | Settings | File Templates.
- */
+* Created by JetBrains PhpStorm.
+* User: Administrator
+* Date: 12-11-27
+* Time: 上午10:48
+* To change this template use File | Settings | File Templates.
+*/
 class Common
 {
-    public static function  httpPost($url, array $postFiled)
+    public static function httpPost($url, array $postFiled)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -36,14 +36,14 @@ class Common
     }
 
     /**
-     * PHP截取UTF-8字符串，解决半字符问题。
-     * 英文、数字（半角）为1字节（8位），中文（全角）为3字节
-     * @static
-     * @param $str 源字符串
-     * @param $len 左边的子串的长度
-     * @return string 取出的字符串, 当$len小于等于0时, 会返回整个字符串
-     */
-    public static function  utf_substr($str, $len)
+* PHP截取UTF-8字符串，解决半字符问题。
+* 英文、数字（半角）为1字节（8位），中文（全角）为3字节
+* @static
+* @param $str 源字符串
+* @param $len 左边的子串的长度
+* @return string 取出的字符串, 当$len小于等于0时, 会返回整个字符串
+*/
+    public static function utf_substr($str, $len)
     {
         for ($i = 0; $i < $len; $i++) {
             $temp_str = substr($str, 0, 1);
@@ -95,9 +95,9 @@ class Common
     }
 
     /**
-     * @param $content
-     * @return string
-     */
+* @param $content
+* @return string
+*/
     function unhtml($content)
     {
         $content = htmlspecialchars($content); //转换文本中的特殊字符
@@ -129,9 +129,9 @@ class Common
     }
 
     /**
-     * 将数组$arr分成$count组，假设$arr长为7，$count=3，则0,3,6一组,1,4一组,2,5一组
-     * @param $arr
-     */
+* 将数组$arr分成$count组，假设$arr长为7，$count=3，则0,3,6一组,1,4一组,2,5一组
+* @param $arr
+*/
     public static function slice_array($arr, $count)
     {
         $result = array();

@@ -8,14 +8,14 @@
  */
 abstract class Model
 {
-    // 如果对象有没人值，可以给具体的model添加有默认值得属性，比如public $has_read=false
+    // 如果对象有默认值，可以给具体的model添加有默认值得属性，比如public $has_read=false
     protected static $tableName;
     protected $isNewRecord = true;
     protected static $pkColumn;
     protected static $columnTypes;
     protected static $relations = array(); // 外键，eg. array('name' => array('column' => '?', 'model' => 'model_name', 'key' => 'mapped_column_name'))
     protected $data = array();
-    protected static $onlyReadColumns = array(); // TODO: 只从数据库中读取，但不写入数据库的字段，比如id, 自动时间等
+    protected static $onlyReadColumns = array(); // 只从数据库中读取，但不在保存时写入数据库的字段，比如id, 自动时间等
 
     public function __set($name, $value)
     {
@@ -88,7 +88,7 @@ abstract class Model
             $columns = $this::$columnTypes;
             $i = 0;
             foreach ($columns as $column => $value) {
-                if ($column == $this::$pkColumn) {
+                if (in_array($column, $this::$readOnlyColumn)) {
                     continue;
                 }
                 if ($i > 0) {
@@ -143,8 +143,8 @@ abstract class Model
     public function delete()
     {
         $class = get_class($this);
-        $pk = $this::$pkColumn;
-        $sql = "delete from " . TABLE_PREFIX . $this::$tableName . " t where `$pk`=?";
+        $pk = $class::$pkColumn;
+        $sql = "delete from " . TABLE_PREFIX . $class::$tableName . " t where `$pk`=?";
         $bindParams = array($this->$pk);
         $stmt = Simu::db()->prepare($sql);
         return $stmt->execute($bindParams);
